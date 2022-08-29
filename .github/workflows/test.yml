@@ -1,0 +1,35 @@
+name: Test
+
+on: 
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ['25.0.4']
+        elixir: ['1.13.4']
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --mount type=tmpfs,destination=/var/lin/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - run: mix deps.get
+      - run: mix test

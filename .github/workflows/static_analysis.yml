@@ -1,0 +1,9 @@
+name: Static Analysis
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  credo:
+    uses: ./.github/workflows/credo.yml

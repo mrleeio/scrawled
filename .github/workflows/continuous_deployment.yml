@@ -1,0 +1,13 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+  deploy:
+    uses: ./.github/workflows/deploy.yml

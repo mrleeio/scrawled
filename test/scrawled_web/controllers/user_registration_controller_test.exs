@@ -4,6 +4,7 @@ defmodule ScrawledWeb.UserRegistrationControllerTest do
   import Scrawled.AccountsFixtures
 
   describe "GET /users/register" do
+    @tag :skip
     test "renders registration page", %{conn: conn} do
       conn = get(conn, Routes.user_registration_path(conn, :new))
       response = html_response(conn, 200)
@@ -20,6 +21,7 @@ defmodule ScrawledWeb.UserRegistrationControllerTest do
 
   describe "POST /users/register" do
     @tag :capture_log
+    @tag :skip
     test "creates account and logs the user in", %{conn: conn} do
       email = unique_user_email()
 

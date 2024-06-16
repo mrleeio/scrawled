@@ -1,24 +1,43 @@
-# README
+# Scrawled
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A simple blogging platform built with Ruby on Rails.
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+Follow these steps to get the project up and running on your local machine:
 
-* System dependencies
+### Prerequisites
 
-* Configuration
+- Install ruby version defined in the [.ruby-version](.ruby-version) file.
+- PostgreSQL (latest)
+- Redis (latest)
 
-* Database creation
+### Development
 
-* Database initialization
+Clone the repository:
 
-* How to run the test suite
+```
+git clone git@github.com:mrleeio/scrawled.git
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+Setup your database:
 
-* Deployment instructions
+```
+bundle exec rails db:setup
+```
 
-* ...
+Create the `master.key` file for decrypting credentials:
+
+```
+MASTER_KEY=
+
+echo $MASTER_KEY > master.key
+```
+
+Start the web/worker processes:
+
+```
+gem install foreman
+
+foreman start -f Procfile.dev
+```

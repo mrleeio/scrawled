@@ -79,6 +79,8 @@ GEM
       public_suffix (>= 2.0.2, < 6.0)
     ast (2.4.2)
     base64 (0.2.0)
+    based_uuid (0.6.4)
+      activesupport (>= 7.0)
     bigdecimal (3.1.8)
     bindex (0.8.1)
     bootsnap (1.18.3)
@@ -304,6 +306,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  based_uuid
   bootsnap
   capybara
   debug

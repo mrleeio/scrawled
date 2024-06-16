@@ -55,3 +55,45 @@ There is a new standard that addresses this problem by including a UNIX timestam
 Ruby 3.3.x introduced support for creating UUIDv7 using `SecureRandom.uuid_v7` or `Random.uuid_v7`.
 
 This project is configured to generate UUIDv7 primary keys by default.
+
+### Based UUID
+
+This project generates “double-clickable”, URL-friendly UUIDs with optional prefixes:
+
+```
+user_763j02ryxh8dbs56mgcjqrmmgt #=> e61c802c-7bb1-4357-929a-9064af8a521a
+bpo_12dm1qresn83st62reqdw7f7cv  #=> 226d037c-3b35-40f3-a30b-0ebb78779d9b
+```
+
+This functionality is provided by the [based_uuid](https://github.com/pch/based_uuid) gem.
+
+#### Usage
+
+Add the following line to your model class:
+
+```
+class BlogPost < ApplicationRecord
+  has_based_uuid prefix: :bpo
+end
+
+post = BlogPost.last
+post.based_uuid                #=> bpo_12dm1qresn83st62reqdw7f7cv
+post.based_uuid(prefix: false) #=> 12dm1qresn83st62reqdw7f7cv
+
+post.based_uuid_with_prefix
+post.based_uuid_without_prefix
+```
+
+#### Lookup
+
+BasedUUID includes a find_by_based_uuid model method to look up records:
+
+```
+BlogPost.find_by_based_uuid("bpo_12dm1qresn83st62reqdw7f7cv")
+
+# or without the prefix:
+BlogPost.find_by_based_uuid("12dm1qresn83st62reqdw7f7cv")
+
+# there’s also the bang version:
+BlogPost.find_by_based_uuid!("12dm1qresn83st62reqdw7f7cv")
+```

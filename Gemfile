@@ -4,6 +4,7 @@ ruby "3.3.3"
 
 gem "rails"
 
+gem "based_uuid"
 gem "bootsnap", require: false
 gem "importmap-rails"
 gem "jbuilder"

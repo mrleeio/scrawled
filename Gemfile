@@ -3,20 +3,22 @@ source "https://rubygems.org"
 ruby "3.3.3"
 
 gem "rails"
-gem "propshaft"
-gem "pg"
-gem "puma"
+
+gem "bootsnap", require: false
 gem "importmap-rails"
-gem "turbo-rails"
+gem "jbuilder"
+gem "pg"
+gem "propshaft"
+gem "puma"
+gem "redis"
 gem "stimulus-rails"
 gem "tailwindcss-rails"
-gem "jbuilder"
-gem "redis"
+gem "turbo-rails"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
-gem "bootsnap", require: false
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ]
+  gem "rubocop-rails-omakase", require: false
 end
 
 group :development do

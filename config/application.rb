@@ -23,5 +23,11 @@ module Scrawled
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Configure generators
+    config.generators do |generate|
+      # Enable UUID primary keys for Active Record models
+      generate.orm :active_record, primary_key_type: :uuid
+    end
   end
 end

@@ -1,0 +1,88 @@
+name: Bundler Audit
+
+on:
+  workflow_call:
+    inputs:
+      reporter:
+        description: 'Reporter type to use (github-pr-review, github-pr-check, github-check)'
+        type: string
+        default: 'github-pr-review'
+        required: false
+      fail_on_error:
+        description: 'Whether to fail the workflow if vulnerabilities are found'
+        type: boolean
+        default: true
+        required: false
+  workflow_dispatch:
+    inputs:
+      reporter:
+        description: 'Reporter type to use'
+        type: choice
+        options:
+          - github-pr-review
+          - github-pr-check
+          - github-check
+        default: 'github-pr-review'
+        required: true
+      fail_on_error:
+        description: 'Fail on vulnerabilities'
+        type: boolean
+        default: true
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  audit:
+    name: Bundler Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Install bundler-audit
+        run: gem install bundler-audit
+
+      - name: Update vulnerability database
+        run: bundle audit update
+
+      - name: Run bundler-audit
+        id: bundler_audit
+        run: |
+          bundle-audit check --format json > bundler-audit-results.json || echo "Vulnerabilities found, continuing for reporting"
+      
+      - name: Process audit results
+        if: always()
+        run: |
+          echo "### 🚨 Vulnerable Dependencies Found" > audit-report.md
+          echo "" >> audit-report.md
+          echo "| Gem | Version | Advisory | Criticality | URL |" >> audit-report.md
+          echo "| --- | --- | --- | --- | --- |" >> audit-report.md
+          
+          cat bundler-audit-results.json | jq -r '.[] | "| \(.gem) | \(.version) | \(.advisory) | \(.criticality) | [\(.url)](\(.url)) |"' >> audit-report.md || echo "No vulnerabilities found" > audit-report.md
+
+      - name: Report vulnerabilities
+        uses: reviewdog/action-setup@v1
+        if: always()
+        
+      - name: Run reviewdog
+        if: always() && github.event_name == 'pull_request'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat audit-report.md | reviewdog -efm="%f:%l:%c: %m" -name="bundler-audit" -reporter=${{ inputs.reporter }} -level=${{ inputs.fail_on_error && 'error' || 'warning' }}
+      
+      - name: Check for vulnerabilities
+        if: inputs.fail_on_error
+        run: bundle audit check --update

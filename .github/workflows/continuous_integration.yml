@@ -1,0 +1,74 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run Rails Tests
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  rubocop:
+    name: Run RuboCop Linting
+    uses: ./.github/workflows/rubocop.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: true
+    secrets: inherit
+
+  brakeman:
+    name: Run Brakeman Security Scan
+    uses: ./.github/workflows/brakeman.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: true
+    secrets: inherit
+
+  importmap_audit:
+    name: Run Importmap Security Audit
+    uses: ./.github/workflows/importmap_audit.yml
+    secrets: inherit
+    
+  markdown_lint:
+    name: Run Markdown Linting
+    uses: ./.github/workflows/markdownlint.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: true
+    secrets: inherit
+    
+  misspell:
+    name: Run Spelling Check
+    uses: ./.github/workflows/misspell.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: false
+      locale: US
+    secrets: inherit
+    
+  bundler_audit:
+    name: Run Bundler Audit
+    uses: ./.github/workflows/bundler_audit.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: true
+    secrets: inherit
+    
+  erblint:
+    name: Run ERB Lint
+    uses: ./.github/workflows/erb_lint.yml
+    with:
+      reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
+      fail_on_error: true
+    secrets: inherit

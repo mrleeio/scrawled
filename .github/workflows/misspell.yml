@@ -1,0 +1,80 @@
+name: Misspell
+
+on:
+  workflow_call:
+    inputs:
+      reporter:
+        description: 'Reporter type to use (github-pr-review, github-pr-check, github-check)'
+        type: string
+        default: 'github-pr-review'
+        required: false
+      fail_on_error:
+        description: 'Whether to fail the workflow if spelling errors are found'
+        type: boolean
+        default: false
+        required: false
+      locale:
+        description: 'Locale to use (US or UK)'
+        type: string
+        default: 'US'
+        required: false
+  workflow_dispatch:
+    inputs:
+      reporter:
+        description: 'Reporter type to use'
+        type: choice
+        options:
+          - github-pr-review
+          - github-pr-check
+          - github-check
+        default: 'github-pr-review'
+        required: true
+      fail_on_error:
+        description: 'Fail on spelling errors'
+        type: boolean
+        default: false
+        required: true
+      locale:
+        description: 'Locale to use'
+        type: choice
+        options:
+          - US
+          - UK
+        default: 'US'
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  spell_check:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Run misspell with reviewdog
+        uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: ${{ inputs.reporter }}
+          locale: ${{ inputs.locale }}
+          level: ${{ inputs.fail_on_error && 'error' || 'warning' }}
+          pattern: |
+            **/*.md
+            **/*.rb
+            **/*.js
+            **/*.html.erb
+            **/*.yml
+            **/*.yaml
+          exclude: |
+            vendor/**
+            node_modules/**
+            tmp/**
+            log/**
+            .git/**

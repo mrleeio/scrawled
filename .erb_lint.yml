@@ -1,0 +1,30 @@
+---
+EnableDefaultLinters: true
+exclude:
+  - 'vendor/**'
+  - 'tmp/**'
+  - 'node_modules/**'
+  - 'storage/**'
+linters:
+  AllowedScriptType:
+    enabled: true
+    allowed_types:
+      - text/javascript
+      - text/template
+      - text/x-tmpl
+  ClosingErbTagIndent:
+    enabled: true
+  ErbSafety:
+    enabled: true
+  FinalNewline:
+    enabled: true
+  NoJavascriptTagHelper:
+    enabled: true
+  RightTrim:
+    enabled: true
+  SelfClosingTag:
+    enabled: true
+  SpaceAroundErbTag:
+    enabled: true
+  SpaceIndentation:
+    enabled: true

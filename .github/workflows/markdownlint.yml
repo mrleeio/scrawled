@@ -1,0 +1,66 @@
+name: Markdown Lint
+
+on:
+  workflow_call:
+    inputs:
+      reporter:
+        description: 'Reporter type to use (github-pr-review, github-pr-check, github-check)'
+        type: string
+        default: 'github-pr-review'
+        required: false
+      fail_on_error:
+        description: 'Whether to fail the workflow if linting errors are found'
+        type: boolean
+        default: true
+        required: false
+  workflow_dispatch:
+    inputs:
+      reporter:
+        description: 'Reporter type to use'
+        type: choice
+        options:
+          - github-pr-review
+          - github-pr-check
+          - github-check
+        default: 'github-pr-review'
+        required: true
+      fail_on_error:
+        description: 'Fail on linting errors'
+        type: boolean
+        default: true
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint_markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create markdownlint config
+        run: |
+          cat > .markdownlint.json << EOF
+          {
+            "default": true,
+            "MD013": false,
+            "MD033": false,
+            "MD041": false
+          }
+          EOF
+
+      - name: Run markdownlint with reviewdog
+        uses: reviewdog/action-markdownlint@v0.14
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: ${{ inputs.reporter }}
+          level: warning
+          markdownlint_flags: '**/*.md --ignore node_modules'
+          fail_on_error: ${{ inputs.fail_on_error }}

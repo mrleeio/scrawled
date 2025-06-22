@@ -1,0 +1,102 @@
+name: ERB Lint
+
+on:
+  workflow_call:
+    inputs:
+      reporter:
+        description: 'Reporter type to use (github-pr-review, github-pr-check, github-check)'
+        type: string
+        default: 'github-pr-review'
+        required: false
+      fail_on_error:
+        description: 'Whether to fail the workflow if linting errors are found'
+        type: boolean
+        default: true
+        required: false
+  workflow_dispatch:
+    inputs:
+      reporter:
+        description: 'Reporter type to use'
+        type: choice
+        options:
+          - github-pr-review
+          - github-pr-check
+          - github-check
+        default: 'github-pr-review'
+        required: true
+      fail_on_error:
+        description: 'Fail on linting errors'
+        type: boolean
+        default: true
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint_erb:
+    name: ERB Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+          
+      - name: Run ERB Lint
+        id: erb_lint
+        run: |
+          # Run ERB Lint and capture output in a format reviewdog can understand
+          bundle exec erb_lint --lint-all > erb-lint-output.txt 2>/dev/null || echo "Linting errors found, continuing for reporting"
+          
+          # Convert ERB Lint output to reviewdog format (file:line:column: message)
+          if [ -s erb-lint-output.txt ]; then
+            # Parse the ERB Lint output format and convert to reviewdog format
+            grep -E "In file:" erb-lint-output.txt | while read -r line; do
+              # Extract file path from "In file: path:line"
+              file_line=$(echo "$line" | sed 's/In file: //')
+              file_path=$(echo "$file_line" | cut -d: -f1)
+              line_num=$(echo "$file_line" | cut -d: -f2)
+              
+              # Get the previous line which contains the error message
+              error_msg=$(grep -B1 "In file: $file_line" erb-lint-output.txt | head -1 | sed 's/^[[:space:]]*//')
+              
+              echo "$file_path:$line_num:1: $error_msg"
+            done > erb-lint-formatted.txt
+          else
+            touch erb-lint-formatted.txt
+          fi
+      
+      - name: Process lint results
+        if: always()
+        run: |
+          if [ -s erb-lint-formatted.txt ]; then
+            echo "Linting errors found - see reviewdog output for details"
+          else
+            echo "✅ No linting errors found"
+          fi
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        if: always()
+        
+      - name: Run reviewdog
+        if: always() && github.event_name == 'pull_request'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f erb-lint-formatted.txt ]; then
+            cat erb-lint-formatted.txt | reviewdog -efm="%f:%l:%c: %m" -name="erb-lint" -reporter=${{ inputs.reporter }} -level=${{ inputs.fail_on_error && 'error' || 'warning' }}
+          fi
+      
+      - name: Check for linting errors
+        if: inputs.fail_on_error
+        run: bundle exec erb_lint --lint-all 2>/dev/null

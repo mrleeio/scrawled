@@ -49,6 +49,15 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
+  # Static analysis for Ruby code [https://github.com/rubysec/bundler-audit]
+  gem "bundler-audit", require: false
+
+  # Static analysis for ERB Ruby code [https://github.com/Shopify/erb_lint]
+  gem "erb_lint", require: false
+
+  # Static analysis for Ruby on Rails migrations [https://github.com/ankane/strong_migrations]
+  gem "strong_migrations", require: false
+
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 end

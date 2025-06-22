@@ -23,6 +23,8 @@ group :development, :test do
   gem "bundler-audit", require: false
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem "erb_lint", require: false
+  gem "factory_bot_rails"
+  gem "faker"
   gem "rubocop-rails-omakase", require: false
   gem "strong_migrations", require: false
 end
@@ -33,5 +35,6 @@ end
 
 group :test do
   gem "capybara"
+  gem "database_cleaner-active_record"
   gem "selenium-webdriver"
 end

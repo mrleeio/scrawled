@@ -57,7 +57,7 @@ jobs:
           EOF
 
       - name: Run markdownlint with reviewdog
-        uses: reviewdog/action-markdownlint@v0.14
+        uses: reviewdog/action-markdownlint@v0.26
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: ${{ inputs.reporter }}
